@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Brizzy Ride &amp; Explore — Instant Fare Quote</title>
+<style>
+  :root{
+    --navy:#0d2b45; --blue:#1565c0; --blue-dk:#0d47a1; --blue-lt:#e8f1fb;
+    --ink:#14202b; --mute:#5f7183; --line:#dbe4ed; --bg:#f4f7fb; --white:#fff;
+    --gold:#c8912a; --green:#0f7a4d; --amber:#b45309;
+    --r:14px; --shadow:0 1px 2px rgba(13,43,69,.06),0 8px 24px rgba(13,43,69,.08);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px 64px}
+
+  /* ---------- header ---------- */
+  header{background:linear-gradient(160deg,var(--navy),var(--blue-dk));color:#fff;padding:26px 0 30px}
+  header .wrap{padding-bottom:0}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:.2px;font-size:19px}
+  .brand .dot{width:34px;height:34px;border-radius:10px;background:var(--white);color:var(--blue-dk);
+    display:grid;place-items:center;font-size:18px;flex:none}
+  header h1{margin:16px 0 6px;font-size:25px;line-height:1.2;font-weight:800}
+  header p{margin:0;color:#bcd4ee;font-size:14.5px;max-width:52ch}
+
+  /* ---------- demo ribbon ---------- */
+  .ribbon{background:#fff5e0;border-bottom:1px solid #f0d9a8;color:#6b4a10;
+    font-size:13.5px;padding:10px 0}
+  .ribbon .wrap{padding-bottom:0}
+  .ribbon b{color:#4a3208}
+
+  /* ---------- cards ---------- */
+  .card{background:var(--white);border:1px solid var(--line);border-radius:var(--r);
+    box-shadow:var(--shadow);padding:20px;margin-top:18px}
+  .card > h2{margin:0 0 4px;font-size:16px;letter-spacing:.02em;text-transform:uppercase;color:var(--navy)}
+  .card > h2 + .sub{margin:0 0 16px;color:var(--mute);font-size:13.5px}
+
+  label{display:block;font-size:13px;font-weight:650;color:var(--navy);margin:0 0 6px}
+  .field{margin-bottom:14px;position:relative}
+  input,select,textarea{
+    width:100%;padding:12px 13px;border:1.5px solid var(--line);border-radius:10px;
+    font:inherit;font-size:16px;color:var(--ink);background:#fff;transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus,textarea:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.13)}
+  textarea{resize:vertical;min-height:70px}
+  .row{display:grid;gap:14px}
+  @media(min-width:560px){ .row.two{grid-template-columns:1fr 1fr} .row.three{grid-template-columns:1fr 1fr 1fr} }
+
+  /* ---------- autocomplete ---------- */
+  .ac{position:absolute;z-index:40;left:0;right:0;top:calc(100% + 4px);background:#fff;
+    border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 28px rgba(13,43,69,.16);
+    max-height:236px;overflow:auto;display:none}
+  .ac.on{display:block}
+  .ac div{padding:11px 13px;font-size:14px;cursor:pointer;border-bottom:1px solid #f0f4f8;line-height:1.35}
+  .ac div:last-child{border-bottom:0}
+  .ac div:hover,.ac div.sel{background:var(--blue-lt)}
+  .ac .hint{color:var(--mute);font-size:12.5px;cursor:default}
+  .pin{position:absolute;right:12px;top:35px;font-size:13px;color:var(--mute)}
+
+  /* ---------- trip strip ---------- */
+  .trip{display:none;margin-top:4px;background:var(--blue-lt);border:1px solid #c9dcf4;
+    border-radius:12px;padding:13px 15px;font-size:14.5px;color:var(--blue-dk);font-weight:600}
+  .trip.on{display:block}
+  .trip small{display:block;font-weight:500;color:#456; margin-top:3px;font-size:12.5px}
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid #9fc2e8;border-top-color:var(--blue-dk);
+    border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:7px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  /* ---------- vehicles ---------- */
+  .veh{border:2px solid var(--line);border-radius:12px;padding:15px;cursor:pointer;
+    display:flex;gap:13px;align-items:flex-start;background:#fff;transition:border-color .15s,background .15s}
+  .veh:hover{border-color:#b9cde4}
+  .veh.sel{border-color:var(--blue);background:#f7fbff}
+  .veh .ico{width:42px;height:42px;border-radius:10px;background:var(--blue-lt);color:var(--blue-dk);
+    display:grid;place-items:center;font-size:20px;flex:none}
+  .veh.sel .ico{background:var(--blue);color:#fff}
+  .veh .n{font-weight:750;font-size:15.5px}
+  .veh .c{color:var(--mute);font-size:12.8px;margin-top:2px}
+  .veh .p{margin-left:auto;text-align:right;font-weight:800;font-size:19px;color:var(--navy);white-space:nowrap}
+  .veh .p small{display:block;font-weight:500;font-size:11.5px;color:var(--mute);letter-spacing:.03em}
+  .veh .p .na{font-size:13px;font-weight:600;color:var(--mute)}
+  .badge{display:inline-block;background:var(--gold);color:#fff;font-size:10.5px;font-weight:700;
+    padding:2px 7px;border-radius:20px;margin-left:6px;letter-spacing:.04em;vertical-align:1px}
+  .badge.fx{background:var(--green)}
+
+  /* ---------- breakdown ---------- */
+  .bd{margin-top:14px;border-top:1px dashed var(--line);padding-top:13px;display:none}
+  .bd.on{display:block}
+  .bd table{width:100%;border-collapse:collapse;font-size:14px}
+  .bd td{padding:5px 0;color:var(--mute)}
+  .bd td:last-child{text-align:right;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .bd tr.tot td{border-top:1.5px solid var(--line);padding-top:10px;font-weight:800;color:var(--navy);font-size:16.5px}
+  .bd tr.note td{color:var(--green);font-size:12.5px;padding-top:9px}
+
+  /* ---------- toggle ---------- */
+  .seg{display:flex;background:#eef3f9;border-radius:11px;padding:4px;gap:4px;margin-bottom:6px}
+  .seg button{flex:1;border:0;background:transparent;padding:10px 8px;border-radius:8px;
+    font:inherit;font-size:13.5px;font-weight:650;color:var(--mute);cursor:pointer;line-height:1.25}
+  .seg button.on{background:#fff;color:var(--blue-dk);box-shadow:0 1px 3px rgba(13,43,69,.12)}
+
+  .cmp{margin-top:14px;font-size:13.5px;background:#fffaf0;border:1px solid #f2ddb4;
+    border-radius:11px;padding:13px 15px;color:#6b4a10;display:none}
+  .cmp.on{display:block}
+  .cmp b{color:#4a3208}
+
+  /* ---------- buttons ---------- */
+  .btn{display:block;width:100%;border:0;border-radius:12px;padding:16px;font:inherit;font-size:16.5px;
+    font-weight:750;cursor:pointer;text-align:center;text-decoration:none;transition:filter .15s}
+  .btn:hover{filter:brightness(1.07)}
+  .btn.wa{background:#25d366;color:#fff;margin-top:14px}
+  .btn.wa[aria-disabled="true"]{background:#c8d3dd;color:#7d8b98;pointer-events:none}
+  .btn.pri{background:var(--blue);color:#fff;margin-top:10px}
+
+  .foot{margin-top:26px;text-align:center;color:var(--mute);font-size:12.5px;line-height:1.7}
+  .foot a{color:var(--blue);text-decoration:none}
+  .err{color:#b3261e;font-size:13px;margin-top:8px;display:none}
+  .err.on{display:block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand"><span class="dot">B</span> Brizzy Ride &amp; Explore</div>
+    <h1>Get your fare before you book</h1>
+    <p>Enter where you're going. The price is worked out from the real road distance — no waiting on a callback.</p>
+  </div>
+</header>
+
+<div class="ribbon"><div class="wrap">
+  <b>Working demo.</b> Real Brisbane addresses, real road distances, your rates. Built to show you the fare logic before we wire it into your Wix site.
+</div></div>
+
+<div class="wrap">
+
+  <!-- ============ TRIP ============ -->
+  <div class="card">
+    <h2>Your trip</h2>
+    <p class="sub">Start typing an address — suggestions appear as you go.</p>
+
+    <div class="field">
+      <label for="pu">Pick-up address</label>
+      <input id="pu" autocomplete="off" placeholder="e.g. Brisbane Airport">
+      <div class="ac" id="acpu"></div>
+    </div>
+
+    <div class="field">
+      <label for="do">Drop-off address</label>
+      <input id="do" autocomplete="off" placeholder="e.g. Surfers Paradise">
+      <div class="ac" id="acdo"></div>
+    </div>
+
+    <div class="trip" id="trip"></div>
+    <div class="err" id="err"></div>
+
+    <div class="row two" style="margin-top:14px">
+      <div class="field"><label for="dt">Date</label><input id="dt" type="date"></div>
+      <div class="field"><label for="tm">Time</label><input id="tm" type="time" value="09:00"></div>
+    </div>
+
+    <div class="row three">
+      <div class="field"><label for="pax">Passengers</label>
+        <select id="pax"><option>1</option><option>2</option><option>3</option><option>4</option>
+        <option>5</option><option>6</option><option>7</option><option>8</option></select></div>
+      <div class="field"><label for="bag">Luggage</label>
+        <select id="bag"><option>0</option><option>1</option><option selected>2</option><option>3</option>
+        <option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
+      <div class="field"><label for="seats">Child seats</label>
+        <select id="seats"><option value="0">None</option><option value="1">1 &nbsp;(+$35)</option>
+        <option value="2">2 &nbsp;(+$70)</option><option value="3">3 &nbsp;(+$105)</option></select></div>
+    </div>
+
+    <div class="field"><label for="flt">Flight number <span style="font-weight:400;color:var(--mute)">(optional)</span></label>
+      <input id="flt" placeholder="e.g. QF 623"></div>
+
+    <div class="field" style="margin-bottom:0"><label for="msg">Special requests <span style="font-weight:400;color:var(--mute)">(optional)</span></label>
+      <textarea id="msg" placeholder="Meet inside the terminal, pram, extra stop…"></textarea></div>
+  </div>
+
+  <!-- ============ RATE MODEL ============ -->
+  <div class="card">
+    <h2>Which rate card?</h2>
+    <p class="sub">This switch is here so you can compare. In the real build there is only one set of live rates, and you change them yourself.</p>
+    <div class="seg">
+      <button id="mA" class="on" onclick="setModel('A')">Your rates<br>as you sent them</button>
+      <button id="mB" onclick="setModel('B')">Suggested taper<br>for long trips</button>
+    </div>
+    <div class="cmp" id="cmp"></div>
+  </div>
+
+  <!-- ============ VEHICLES ============ -->
+  <div class="card">
+    <h2>Choose your vehicle</h2>
+    <p class="sub">Fares update the moment both addresses are in.</p>
+
+    <div class="row" style="gap:12px">
+      <div class="veh sel" id="vHAVAL" onclick="pick('HAVAL')">
+        <div class="ico">🚗</div>
+        <div><div class="n">Haval <span style="font-weight:500;color:var(--mute);font-size:13px">— Standard</span></div>
+          <div class="c">Up to 4 passengers · 3 bags</div></div>
+        <div class="p" id="pHAVAL"><span class="na">Enter addresses</span></div>
+      </div>
+
+      <div class="veh" id="vVITO" onclick="pick('VITO')">
+        <div class="ico">🚐</div>
+        <div><div class="n">Mercedes Vito <span class="badge">PREMIUM</span></div>
+          <div class="c">Up to 8 passengers · 8 bags</div></div>
+        <div class="p" id="pVITO"><span class="na">Enter addresses</span></div>
+      </div>
+    </div>
+
+    <div class="bd" id="bd"></div>
+
+    <a class="btn wa" id="wa" aria-disabled="true" href="#" target="_blank" rel="noopener">
+      Send this booking on WhatsApp</a>
+    <div style="text-align:center;color:var(--mute);font-size:12.5px;margin-top:9px">
+      In the live version this also saves the booking and emails you a copy.</div>
+  </div>
+
+  <div class="foot">
+    Demo built for Brizzy Ride &amp; Explore · Brisbane / Gold Coast<br>
+    Distances from OpenStreetMap routing for this demo. The live build uses the Google Maps
+    Routes API on your own key, which also returns Brisbane toll costs automatically.
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   RATE CARD  —  in the live build this lives in a database and you
+   edit every number yourself from an admin screen. It is only here
+   in the page so you can see exactly what drives the fare.
+   ================================================================ */
+const RATES = {
+  A: { // exactly as supplied 10 Sep 2026
+    label:"your rates as sent",
+    HAVAL:{ base:10, perKm:3.50, taperKm:null, perKmAfter:null, perMin:0,    min:30 },
+    VITO :{ base:15, perKm:5.00, taperKm:null, perKmAfter:null, perMin:0.50, min:0  }
+  },
+  B: { // proposal: full rate for the first 15 km, lower rate beyond
+    label:"suggested taper",
+    HAVAL:{ base:10, perKm:3.50, taperKm:15, perKmAfter:1.75, perMin:0,    min:30 },
+    VITO :{ base:15, perKm:5.00, taperKm:15, perKmAfter:2.00, perMin:0.50, min:45 }
+  }
+};
+const CHILD_SEAT = 35;          // per seat
+const VITO_FIXED_UPLIFT = 0.40; // PLACEHOLDER: your fixed fares are one price today.
+                                // Tell me the Vito price for each fixed route and this goes.
+const VEHICLES = {
+  HAVAL:{ name:"Haval", maxPax:4, maxBags:3 },
+  VITO :{ name:"Mercedes Vito", maxPax:8, maxBags:8 }
+};
+
+/* Fixed fares that BEAT the meter, taken from your live Wix booking pages */
+const FIXED = [
+  { name:"Brisbane Airport ↔ Brisbane CBD",   a:[-27.3842,153.1175], b:[-27.4698,153.0251], ra:6,  rb:6,  price:80  },
+  { name:"Brisbane Airport ↔ Redbank Plains", a:[-27.3842,153.1175], b:[-27.6486,152.8600], ra:6,  rb:8,  price:120 },
+  { name:"Brisbane Airport ↔ Gold Coast",     a:[-27.3842,153.1175], b:[-27.9990,153.4297], ra:6,  rb:22, price:180 }
+];
+
+/* ---------------- state ---------------- */
+let model="A", chosen="HAVAL";
+let PU=null, DO=null, TRIP=null;   // {lat,lon,label} / {km,min}
+
+/* ---------------- geo helpers ---------------- */
+const R=6371;
+function haversine(a1,o1,a2,o2){
+  const t=x=>x*Math.PI/180, dLa=t(a2-a1), dLo=t(o2-o1);
+  const h=Math.sin(dLa/2)**2+Math.cos(t(a1))*Math.cos(t(a2))*Math.sin(dLo/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function matchFixed(){
+  if(!PU||!DO) return null;
+  for(const f of FIXED){
+    const fwd = haversine(PU.lat,PU.lon,f.a[0],f.a[1])<=f.ra && haversine(DO.lat,DO.lon,f.b[0],f.b[1])<=f.rb;
+    const rev = haversine(PU.lat,PU.lon,f.b[0],f.b[1])<=f.rb && haversine(DO.lat,DO.lon,f.a[0],f.a[1])<=f.ra;
+    if(fwd||rev) return f;
+  }
+  return null;
+}
+
+/* ---------------- fare engine ---------------- */
+function meter(vk,km,min){
+  const r=RATES[model][vk], rows=[];
+  let total=r.base;
+  rows.push(["Base fare",r.base]);
+
+  if(r.taperKm && km>r.taperKm){
+    const first=r.taperKm*r.perKm, rest=(km-r.taperKm)*r.perKmAfter;
+    rows.push([`First ${r.taperKm} km @ $${r.perKm.toFixed(2)}/km`, first]);
+    rows.push([`Next ${(km-r.taperKm).toFixed(1)} km @ $${r.perKmAfter.toFixed(2)}/km`, rest]);
+    total+=first+rest;
+  }else{
+    const d=km*r.perKm;
+    rows.push([`${km.toFixed(1)} km @ $${r.perKm.toFixed(2)}/km`, d]);
+    total+=d;
+  }
+  if(r.perMin>0){
+    const mins=Math.round(min), t=mins*r.perMin;
+    rows.push([`${mins} min @ $${r.perMin.toFixed(2)}/min`, t]);
+    total+=t;
+  }
+  let bumped=false;
+  if(r.min>0 && total<r.min){ rows.push([`Minimum fare applied`, r.min-total]); total=r.min; bumped=true; }
+  return {rows,total,bumped};
+}
+
+function quote(vk){
+  if(!TRIP) return null;
+  const seats=+document.getElementById("seats").value;
+  const fx=matchFixed();
+  let rows, base, fixedName=null;
+
+  if(fx){ rows=[[`Fixed fare — ${fx.name}`, fx.price]]; base=fx.price; fixedName=fx.name;
+          if(vk==="VITO"){ const up=Math.round(fx.price*VITO_FIXED_UPLIFT);
+            rows.push([`Vito uplift on fixed fares (+${Math.round(VITO_FIXED_UPLIFT*100)}% — placeholder, you set this)`,up]); base+=up; } }
+  else  { const m=meter(vk,TRIP.km,TRIP.min); rows=m.rows; base=m.total; }
+
+  if(seats>0){ rows.push([`Child seat × ${seats}`, seats*CHILD_SEAT]); base+=seats*CHILD_SEAT; }
+  return {rows,total:base,fixedName};
+}
+
+/* ---------------- render ---------------- */
+const $=id=>document.getElementById(id);
+const money=n=>"$"+n.toFixed(2).replace(/\.00$/,"");
+
+function render(){
+  for(const vk of Object.keys(VEHICLES)){
+    const q=quote(vk), el=$("p"+vk);
+    if(!q){ el.innerHTML='<span class="na">Enter addresses</span>'; continue; }
+    el.innerHTML = money(q.total) + "<small>" + (q.fixedName?"FIXED FARE":"EST. TOTAL") + "</small>";
+  }
+  const q=quote(chosen), bd=$("bd");
+  if(!q){ bd.classList.remove("on"); $("wa").setAttribute("aria-disabled","true"); $("cmp").classList.remove("on"); return; }
+
+  bd.classList.add("on");
+  let html="<table>";
+  q.rows.forEach(([l,v])=>{ html+=`<tr><td>${l}</td><td>${money(v)}</td></tr>`; });
+  html+=`<tr class="tot"><td>${VEHICLES[chosen].name} total</td><td>${money(q.total)}</td></tr>`;
+  if(q.fixedName) html+=`<tr class="note"><td colspan="2">✓ Your fixed price for this route beat the meter — the customer is charged the fixed fare.</td></tr>`;
+  html+=`<tr class="note"><td colspan="2">Tolls are not in this demo. On the live build Google returns the Brisbane toll cost for the actual route and it is added here automatically.</td></tr>`;
+  html+="</table>";
+  bd.innerHTML=html;
+
+  // capacity warning
+  const pax=+$("pax").value, bag=+$("bag").value, V=VEHICLES[chosen];
+  if(pax>V.maxPax||bag>V.maxBags){
+    bd.innerHTML += `<div style="margin-top:11px;background:#fff4f3;border:1px solid #f6c9c4;color:#b3261e;
+      padding:10px 12px;border-radius:9px;font-size:13px">${pax>V.maxPax?pax+" passengers":bag+" bags"} won't fit the ${V.name}. Choose the Vito.</div>`;
+  }
+  buildWA(q);
+  compare();
+}
+
+function compare(){
+  const box=$("cmp");
+  if(!TRIP || matchFixed()){ box.classList.remove("on"); return; }
+  const cur=model, out={};
+  for(const m of ["A","B"]){ model=m; out[m]=meter(chosen,TRIP.km,TRIP.min).total; }
+  model=cur;
+  const diff=out.A-out.B;
+  if(Math.abs(diff)<1){ box.classList.remove("on"); return; }
+  box.classList.add("on");
+  box.innerHTML = `Over <b>${TRIP.km.toFixed(1)} km</b> in the <b>${VEHICLES[chosen].name}</b>: your rates as sent give
+    <b>${money(out.A)}</b>, the taper gives <b>${money(out.B)}</b> — a difference of <b>${money(Math.abs(diff))}</b>.`;
+}
+
+function buildWA(q){
+  const a=$("wa");
+  const dt=$("dt").value, tm=$("tm").value;
+  const lines=[
+    "Booking request — Brizzy Ride & Explore","",
+    "Pick-up: "+(PU?PU.label:""),
+    "Drop-off: "+(DO?DO.label:""),
+    "Date/time: "+(dt||"—")+" "+(tm||""),
+    "Vehicle: "+VEHICLES[chosen].name,
+    "Passengers: "+$("pax").value+"  Luggage: "+$("bag").value,
+    (+$("seats").value? "Child seats: "+$("seats").value : null),
+    ($("flt").value? "Flight: "+$("flt").value : null),
+    ($("msg").value? "Notes: "+$("msg").value : null),
+    "", "Trip: "+TRIP.km.toFixed(1)+" km, about "+Math.round(TRIP.min)+" min",
+    "Quoted fare: "+money(q.total)+(q.fixedName?" (fixed fare)":" (estimate, tolls extra)")
+  ].filter(Boolean);
+  a.href="https://wa.me/61489194238?text="+encodeURIComponent(lines.join("\n"));
+  a.setAttribute("aria-disabled","false");
+}
+
+/* ---------------- routing ---------------- */
+async function route(){
+  const t=$("trip"), e=$("err");
+  e.classList.remove("on");
+  if(!PU||!DO){ t.classList.remove("on"); TRIP=null; render(); return; }
+  t.classList.add("on");
+  t.innerHTML='<span class="spin"></span>Working out the road distance…';
+  try{
+    const u=`https://router.project-osrm.org/route/v1/driving/${PU.lon},${PU.lat};${DO.lon},${DO.lat}?overview=false`;
+    const r=await fetch(u); const d=await r.json();
+    if(d.code!=="Ok"||!d.routes.length) throw new Error("no route");
+    TRIP={ km:d.routes[0].distance/1000, min:d.routes[0].duration/60 };
+    const fx=matchFixed();
+    t.innerHTML=`${TRIP.km.toFixed(1)} km · about ${Math.round(TRIP.min)} min drive` +
+      (fx?`<small>✓ Matches your fixed route: ${fx.name}</small>`
+         :`<small>Priced on the meter — no fixed route matches this trip.</small>`);
+  }catch(err){
+    TRIP=null; t.classList.remove("on");
+    e.textContent="Couldn't work out that route — try a more specific address."; e.classList.add("on");
+  }
+  render();
+}
+
+/* ---------------- address autocomplete ---------------- */
+function attach(inputId,boxId,set){
+  const inp=$(inputId), box=$(boxId); let timer=null, items=[], idx=-1;
+
+  const close=()=>{ box.classList.remove("on"); idx=-1; };
+  const choose=i=>{
+    const it=items[i]; if(!it) return;
+    inp.value=it.label; set({lat:+it.lat, lon:+it.lon, label:it.label}); close(); route();
+  };
+
+  inp.addEventListener("input",()=>{
+    set(null); TRIP=null; render();
+    const q=inp.value.trim();
+    clearTimeout(timer);
+    if(q.length<3){ close(); return; }
+    box.classList.add("on");
+    box.innerHTML='<div class="hint">Searching…</div>';
+    timer=setTimeout(async()=>{
+      try{
+        const u="https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6"
+              +"&countrycodes=au&viewbox=152.2,-28.6,153.7,-26.8&bounded=0&q="+encodeURIComponent(q);
+        const r=await fetch(u,{headers:{"Accept":"application/json"}});
+        items=(await r.json()).map(x=>({lat:x.lat,lon:x.lon,label:x.display_name.replace(/, Australia$/,"")}));
+        if(!items.length){ box.innerHTML='<div class="hint">No match — try adding the suburb.</div>'; return; }
+        box.innerHTML=items.map((x,i)=>`<div onmousedown="event.preventDefault()" data-i="${i}">${x.label}</div>`).join("");
+        [...box.children].forEach(c=>c.addEventListener("click",()=>choose(+c.dataset.i)));
+      }catch(e){ box.innerHTML='<div class="hint">Address search is busy — try again in a moment.</div>'; }
+    },420);
+  });
+
+  inp.addEventListener("keydown",ev=>{
+    if(!box.classList.contains("on")) return;
+    const n=box.querySelectorAll("div[data-i]").length; if(!n) return;
+    if(ev.key==="ArrowDown"||ev.key==="ArrowUp"){
+      ev.preventDefault(); idx=(idx+(ev.key==="ArrowDown"?1:n-1))%n;
+      box.querySelectorAll("div[data-i]").forEach((c,i)=>c.classList.toggle("sel",i===idx));
+    } else if(ev.key==="Enter"&&idx>=0){ ev.preventDefault(); choose(idx); }
+    else if(ev.key==="Escape") close();
+  });
+  inp.addEventListener("blur",()=>setTimeout(close,140));
+}
+
+/* ---------------- wiring ---------------- */
+function pick(v){ chosen=v;
+  document.querySelectorAll(".veh").forEach(e=>e.classList.remove("sel"));
+  $("v"+v).classList.add("sel"); render(); }
+
+function setModel(m){ model=m;
+  $("mA").classList.toggle("on",m==="A"); $("mB").classList.toggle("on",m==="B"); render(); }
+
+attach("pu","acpu",v=>PU=v);
+attach("do","acdo",v=>DO=v);
+["pax","bag","seats","flt","msg","dt","tm"].forEach(id=>$(id).addEventListener("input",render));
+
+(function(){ const d=new Date(); d.setDate(d.getDate()+1);
+  $("dt").value=d.toISOString().slice(0,10); })();
+render();
+</script>
+</body>
+</html>
